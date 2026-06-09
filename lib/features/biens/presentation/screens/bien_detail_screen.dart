@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/constants.dart';
-import '../../../../core/di/injection.dart';
-import '../../domain/entities/bien.dart';
-import '../../domain/usecases/get_bien_by_id_usecase.dart';
+import '../../../../core/enums/app_role.dart';
+import '../../../../core/routes/app_router.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
+import '../bloc/biens_bloc.dart';
+import '../bloc/biens_event.dart';
+import '../bloc/biens_state.dart';
 
 class BienDetailScreen extends StatefulWidget {
   const BienDetailScreen({
@@ -18,21 +24,10 @@ class BienDetailScreen extends StatefulWidget {
 }
 
 class _BienDetailScreenState extends State<BienDetailScreen> {
-  final GetBienByIdUseCase _getBienByIdUseCase = getIt<GetBienByIdUseCase>();
-  late Future<Bien> _future;
-
   @override
   void initState() {
     super.initState();
-    _future = _loadBien();
-  }
-
-  Future<Bien> _loadBien() async {
-    final result = await _getBienByIdUseCase(widget.bienId);
-    return result.fold(
-      (failure) => throw Exception(failure.message),
-      (bien) => bien,
-    );
+    context.read<BiensBloc>().add(LoadBienDetail(widget.bienId));
   }
 
   @override
@@ -41,24 +36,23 @@ class _BienDetailScreenState extends State<BienDetailScreen> {
       appBar: AppBar(
         title: const Text('Fiche bien'),
       ),
-      body: FutureBuilder<Bien>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+      body: BlocBuilder<BiensBloc, BiensState>(
+        builder: (context, state) {
+          if (state is BiensLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.hasError) {
+          if (state is BiensError) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(snapshot.error.toString(), textAlign: TextAlign.center),
+                    Text(state.message, textAlign: TextAlign.center),
                     const SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () => setState(() => _future = _loadBien()),
+                      onPressed: () => context.read<BiensBloc>().add(LoadBienDetail(widget.bienId)),
                       child: const Text('Réessayer'),
                     ),
                   ],
@@ -67,7 +61,11 @@ class _BienDetailScreenState extends State<BienDetailScreen> {
             );
           }
 
-          final bien = snapshot.data!;
+          if (state is! BienDetailLoaded) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final bien = state.bien;
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -124,6 +122,36 @@ class _BienDetailScreenState extends State<BienDetailScreen> {
                 _InfoTile(label: 'Fabricant', value: bien.fabricant!),
               if (bien.processeur != null)
                 _InfoTile(label: 'Processeur', value: bien.processeur!),
+              const SizedBox(height: 20),
+              Builder(
+                builder: (context) {
+                  final authState = context.watch<AuthBloc>().state;
+                  if (authState is Authenticated) {
+                    final role = authState.user.appRole;
+                    if (role == AppRole.technicien || role == AppRole.dg || role == AppRole.admin) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            context.push(AppRouter.declarerPannePath(bien.idBien));
+                          },
+                          icon: const Icon(Icons.error_outline),
+                          label: const Text('Déclarer une panne'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppConstants.errorColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
             ],
           );
         },

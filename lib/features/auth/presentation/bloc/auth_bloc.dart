@@ -29,7 +29,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _getLoggedInUserUseCase();
     result.fold(
       (failure) {
-        print('AppStarted failure: ${failure.message}');
         emit(Unauthenticated());
       },
       (user) => emit(Authenticated(user)),

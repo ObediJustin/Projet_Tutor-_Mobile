@@ -14,12 +14,11 @@ void main() async {
 
   try {
     await dotenv.load(fileName: '.env');
-    print('✅ Variables d\'environnement chargées avec succès.');
-  } catch (e) {
-    print('⚠️ Impossible de charger le fichier .env : $e');
+  } catch (_) {
+    // .env file is optional; defaults are used
   }
 
-  configureDependencies();
+  await configureDependencies();
 
   final authBloc = getIt<AuthBloc>();
   final router = AppRouter.createRouter(authBloc);

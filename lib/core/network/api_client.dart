@@ -13,9 +13,10 @@ class ApiClient {
 
   static const _authorizationHeader = 'Authorization';
 
+  bool _isRefreshing = false;
+
   ApiClient(this._secureStorage) : dio = Dio() {
     final baseUrl = ApiConfig.baseUrl;
-    print('🌐 [API_CLIENT]: baseUrl = $baseUrl');
 
     dio.options = BaseOptions(
       baseUrl: baseUrl,
@@ -82,24 +83,25 @@ class ApiClient {
     dio.interceptors.add(LogInterceptor(
       requestBody: true,
       responseBody: true,
-      logPrint: (obj) => print('🌐 [API_CLIENT]: $obj'),
+      logPrint: (obj) => {},
     ));
   }
 
-  /// Méthode interne pour rafraîchir le token d'accès
+  /// Méthode interne pour rafraîchir le token d'accès avec un mutex
   Future<bool> _refreshAccessToken() async {
-    final refreshToken = await _secureStorage.getRefreshToken();
-    if (refreshToken == null) return false;
+    if (_isRefreshing) return false;
+    _isRefreshing = true;
 
     try {
-      // Créer une nouvelle instance de Dio pour le refresh afin d'éviter les boucles infinies d'intercepteurs
+      final refreshToken = await _secureStorage.getRefreshToken();
+      if (refreshToken == null) return false;
+
       final refreshDio = Dio(BaseOptions(
         baseUrl: dio.options.baseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
       ));
 
-      // Appel de l'API /auth/refresh avec le refresh_token en paramètre de requête (query parameter)
       final response = await refreshDio.post(
         ApiEndpoints.authRefresh,
         queryParameters: {'refresh_token': refreshToken},
@@ -108,19 +110,19 @@ class ApiClient {
       if (response.statusCode == 200) {
         final data = response.data;
         final newAccessToken = data['access_token'] as String;
-        // Le refresh_token peut être renvoyé ou rester identique
         final newRefreshToken = data['refresh_token'] as String? ?? refreshToken;
 
-        // Sauvegarder les nouveaux tokens
         await _secureStorage.saveAccessToken(newAccessToken);
         await _secureStorage.saveRefreshToken(newRefreshToken);
-        
+
         return true;
       }
-    } catch (e) {
-      print('❌ Erreur lors du rafraîchissement du token: $e');
+    } catch (_) {
+      // Échec du refresh silencieux
+    } finally {
+      _isRefreshing = false;
     }
-    
+
     return false;
   }
 }

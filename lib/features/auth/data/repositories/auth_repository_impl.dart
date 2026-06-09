@@ -130,7 +130,7 @@ class AuthRepositoryImpl implements AuthRepository {
       }
     } catch (e) {
       // Ignorer l'erreur réseau pour le logout local
-      print("Warning: Échec de l'appel logout API: $e");
+      // Échec silencieux du logout API
     } finally {
       await _secureStorage.clearAuthData();
       await _localCache.clearCache();

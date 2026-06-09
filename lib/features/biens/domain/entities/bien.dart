@@ -53,5 +53,11 @@ class Bien extends Equatable {
         dateAcquisition,
         prixAcquisition,
         description,
+        marque,
+        modele,
+        immatriculation,
+        numeroSerie,
+        fabricant,
+        processeur,
       ];
 }

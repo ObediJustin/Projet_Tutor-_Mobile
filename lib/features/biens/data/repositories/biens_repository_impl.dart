@@ -40,7 +40,7 @@ class BiensRepositoryImpl implements BiensRepository {
       return const Left(ServerFailure(message: 'Bien introuvable.'));
     } on DioException catch (e) {
       return Left(ServerFailure(
-        message: e.response?.data?['detail']?.toString() ?? 'Erreur lors du chargement du bien.',
+        message: _mapDioError(e, fallback: 'Erreur lors du chargement du bien.'),
         statusCode: e.response?.statusCode,
       ));
     } catch (e) {
@@ -70,7 +70,7 @@ class BiensRepositoryImpl implements BiensRepository {
       return const Left(ServerFailure(message: 'QR code non reconnu.'));
     } on DioException catch (e) {
       return Left(ServerFailure(
-        message: e.response?.data?['detail']?.toString() ?? 'Échec du scan QR.',
+        message: _mapDioError(e, fallback: 'Échec du scan QR.'),
         statusCode: e.response?.statusCode,
       ));
     } catch (e) {
@@ -97,6 +97,19 @@ class BiensRepositoryImpl implements BiensRepository {
       return const Right(unit);
     } catch (e) {
       return Left(CacheFailure('Impossible d\'enregistrer le bien: $e'));
+    }
+  }
+
+  String _mapDioError(DioException error, {required String fallback}) {
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+        return "Impossible de joindre le serveur.";
+      case DioExceptionType.connectionError:
+        return "Connexion refusée.";
+      default:
+        return error.response?.data?['detail']?.toString() ?? fallback;
     }
   }
 }

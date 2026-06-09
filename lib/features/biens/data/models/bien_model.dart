@@ -34,7 +34,7 @@ class BienModel extends Bien {
       idBien: json['id_bien'] as int,
       qrCode: json['qr_code'] as String? ?? '',
       typeBien: typeBien,
-      reference: json['qr_code'] as String? ?? 'BIEN-${json['id_bien']}',
+      reference: json['reference'] as String? ?? json['qr_code'] as String? ?? 'BIEN-${json['id_bien']}',
       nom: _buildNom(
         typeBien: typeBien,
         marque: marque,

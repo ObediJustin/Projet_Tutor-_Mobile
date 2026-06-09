@@ -6,13 +6,44 @@ import '../../../../core/permissions/role_navigation.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 
-class MainShellScreen extends StatelessWidget {
+class MainShellScreen extends StatefulWidget {
   const MainShellScreen({
     super.key,
     required this.child,
   });
 
   final Widget child;
+
+  @override
+  State<MainShellScreen> createState() => _MainShellScreenState();
+}
+
+class _MainShellScreenState extends State<MainShellScreen> {
+  VoidCallback? _routeListener;
+  bool _listenerAdded = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_listenerAdded) {
+      _routeListener = () => setState(() {});
+      GoRouter.of(context).routerDelegate.addListener(_routeListener!);
+      _listenerAdded = true;
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_listenerAdded && _routeListener != null) {
+      GoRouter.of(context).routerDelegate.removeListener(_routeListener!);
+    }
+    super.dispose();
+  }
 
   int _selectedIndex(List<RoleNavItem> items, String location) {
     final index = items.indexWhere((item) => location.startsWith(item.route));
@@ -23,7 +54,7 @@ class MainShellScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
     if (authState is! Authenticated) {
-      return child;
+      return widget.child;
     }
 
     final navItems = RoleNavigation.itemsFor(authState.user.appRole);
@@ -31,7 +62,7 @@ class MainShellScreen extends StatelessWidget {
     final selectedIndex = _selectedIndex(navItems, location);
 
     return Scaffold(
-      body: child,
+      body: widget.child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) {

@@ -11,6 +11,8 @@ class AppConstants {
   static const String userKey = 'logged_in_user';
   static const String recentBiensKey = 'recent_biens';
   static const String lastScannedBienKey = 'last_scanned_bien';
+  static const String recentPannesKey = 'recent_pannes';
+  static const String recentMaintenancesKey = 'recent_maintenances';
 
   // UI Theme Colors (Sleek Professional Palette)
   static const Color primaryColor = Color(0xFF6C63FF); // Indigo

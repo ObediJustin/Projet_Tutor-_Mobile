@@ -84,7 +84,7 @@ class CaisseDashboardBody extends StatelessWidget {
           subtitle: 'Pièces sous le seuil minimum',
           icon: Icons.warning_amber_outlined,
           color: Colors.orange,
-          onTap: () => context.go(AppRouter.homePieces),
+          onTap: () => context.push('/pieces/critiques'),
         ),
         const SizedBox(height: 24),
         RecentBiensSection(biens: data.recentBiens),

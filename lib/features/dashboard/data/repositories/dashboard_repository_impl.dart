@@ -68,7 +68,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
       }
     } on DioException catch (e) {
       return Left(ServerFailure(
-        message: e.response?.data?['detail']?.toString() ?? 'Erreur dashboard.',
+        message: _mapDioError(e, fallback: 'Erreur dashboard.'),
         statusCode: e.response?.statusCode,
       ));
     } catch (e) {
@@ -157,5 +157,18 @@ class DashboardRepositoryImpl implements DashboardRepository {
         (key, value) => MapEntry(key, (value as num).toInt()),
       ),
     );
+  }
+
+  String _mapDioError(DioException error, {required String fallback}) {
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+        return "Impossible de joindre le serveur.";
+      case DioExceptionType.connectionError:
+        return "Connexion refusée.";
+      default:
+        return error.response?.data?['detail']?.toString() ?? fallback;
+    }
   }
 }

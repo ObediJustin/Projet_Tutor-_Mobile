@@ -35,25 +35,26 @@ dependencies:
   dio: ^5.7.0
   flutter_bloc: ^9.0.0
   equatable: ^2.0.7
-  go_router: ^14.7.1
-  flutter_secure_storage: ^9.2.2
-  flutter_dotenv: ^5.2.1
-  get_it: ^8.0.3
-  injectable: ^2.5.0
+  go_router: ^17.2.3
+  flutter_secure_storage: ^10.3.1
+  flutter_dotenv: ^6.0.1
+  get_it: ^9.2.1
+  injectable: ^3.0.0
   dartz: ^0.10.1
   connectivity_plus: ^6.1.1
   internet_connection_checker: ^3.0.1
   cached_network_image: ^3.4.1
-  mobile_scanner: ^6.0.4
+  mobile_scanner: ^7.2.0
   shared_preferences: ^2.3.5
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   build_runner: ^2.4.14
-  injectable_generator: ^2.6.2
+  injectable_generator: ^3.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

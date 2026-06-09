@@ -14,11 +14,18 @@ class ApiEndpoints {
   static const String qrCodeScan = '/qr-code/scan';
 
   // Pannes
+  static const String pannes = '/pannes/';
   static const String pannesMesPannes = '/pannes/mes-pannes';
+  static const String pannesActives = '/pannes/actives';
+  static String panneDetail(int id) => '/pannes/$id';
+  static String panneUpdateStatut(int id) => '/pannes/$id/statut';
   static const String pannesStatistiques = '/pannes/statistiques/summary';
 
   // Maintenances
   static const String maintenancesMes = '/maintenances/mes-maintenances';
+  static String maintenanceDetail(int id) => '/maintenances/$id';
+  static String maintenanceDemarrer(int id) => '/maintenances/$id/demarrer';
+  static String maintenanceTerminer(int id) => '/maintenances/$id/terminer';
 
   // Pièces & besoins
   static const String pieces = '/pieces/';
